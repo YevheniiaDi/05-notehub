@@ -6,11 +6,11 @@ interface FetchNotesParams {
   search?: string;
 }
 
-interface Note {
-  id: string;
+export interface Note {
+  _id: string;
   title: string;
   content: string;
-  
+  tag: string; // або можна використати NoteTag, якщо імпортуєш тип
 }
 
 interface FetchNotesResponse {
@@ -21,11 +21,7 @@ interface FetchNotesResponse {
 
 export const fetchNotes = async ({ page, perPage, search }: FetchNotesParams): Promise<FetchNotesResponse> => {
   const response = await axios.get('/api/notes', {
-    params: {
-      page,
-      perPage,
-      search,
-    },
+    params: { page, perPage, search },
   });
   return response.data;
 };
@@ -37,7 +33,7 @@ export const deleteNote = async (id: string): Promise<void> => {
 interface CreateNoteData {
   title: string;
   content: string;
-  
+  tag: string;
 }
 
 export const createNote = async (noteData: CreateNoteData): Promise<Note> => {
