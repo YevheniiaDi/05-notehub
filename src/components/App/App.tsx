@@ -6,6 +6,7 @@ import Pagination from '../Pagination/Pagination';
 import NoteList from '../NoteList/NoteList';
 import NoteModal from '../NoteModal/NoteModal';
 import useDebounce from '../../hooks/useDebounce';
+import type { Note } from '../../types/note';
 import css from './App.module.css';
 
 const PER_PAGE = 12;
@@ -15,13 +16,15 @@ const App: React.FC = () => {
   const [search, setSearch] = useState('');
   const [isModalOpen, setModalOpen] = useState(false);
 
-  // Дебаунс пошукового рядка
   const debouncedSearch = useDebounce(search, 500);
 
-  // Запит нотаток з react-query
-  const { data, isLoading, isError, refetch } = useQuery(
+  const { data, isLoading, isError, refetch } = useQuery<{
+    results: Note[];
+    total: number;
+    totalPages: number;
+  }>(
     ['notes', page, debouncedSearch],
-    () => fetchNotes({ page, perPage: PER_PAGE, search: debouncedSearch }),
+    () => fetchNotes(debouncedSearch, page), // ✅ fixed
     { keepPreviousData: true }
   );
 
@@ -50,7 +53,7 @@ const App: React.FC = () => {
       {isError && <p>Error loading notes</p>}
 
       {data?.results && data.results.length > 0 && (
-        <NoteList notes={data.results} onDelete={refetch} />
+        <NoteList notes={data.results} />
       )}
 
       {isModalOpen && (

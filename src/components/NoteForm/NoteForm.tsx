@@ -3,7 +3,7 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createNote } from '../../services/noteService';
-import { NoteTag } from '../../types/note';
+import type { NoteTag } from '../../types/note'; // ✅ type-only import
 import css from './NoteForm.module.css';
 
 interface NoteFormProps {
@@ -17,10 +17,10 @@ const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
 
   const mutation = useMutation({
     mutationFn: (values: { title: string; content: string; tag: NoteTag }) =>
-      createNote(values.title, values.content, values.tag),
+      createNote(values), // ✅ fixed
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notes'] }); // оновити список
-      onClose(); // закрити форму
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      onClose();
     },
     onError: (error) => {
       console.error('Error creating note:', error);
@@ -39,7 +39,7 @@ const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
         .max(50, 'Maximum 50 characters')
         .required('Title is required'),
       content: Yup.string().max(500, 'Maximum 500 characters'),
-      tag: Yup.mixed<NoteTag>().oneOf(tagOptions, 'Invalid tag').required('Tag is required'),
+      tag: Yup.mixed<NoteTag>().oneOf(tagOptions).required('Tag is required'),
     }),
     onSubmit: (values) => {
       mutation.mutate(values);
@@ -48,11 +48,11 @@ const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
 
   return (
     <form className={css.form} onSubmit={formik.handleSubmit}>
+      {/* Title */}
       <div className={css.formGroup}>
         <label htmlFor="title">Title</label>
         <input
           id="title"
-          name="title"
           type="text"
           className={css.input}
           {...formik.getFieldProps('title')}
@@ -62,11 +62,11 @@ const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
         )}
       </div>
 
+      {/* Content */}
       <div className={css.formGroup}>
         <label htmlFor="content">Content</label>
         <textarea
           id="content"
-          name="content"
           rows={6}
           className={css.textarea}
           {...formik.getFieldProps('content')}
@@ -76,11 +76,11 @@ const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
         )}
       </div>
 
+      {/* Tag */}
       <div className={css.formGroup}>
         <label htmlFor="tag">Tag</label>
         <select
           id="tag"
-          name="tag"
           className={css.select}
           {...formik.getFieldProps('tag')}
         >
@@ -95,6 +95,7 @@ const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
         )}
       </div>
 
+      {/* Actions */}
       <div className={css.actions}>
         <button
           type="button"
