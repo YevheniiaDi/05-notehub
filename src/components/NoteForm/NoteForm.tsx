@@ -1,18 +1,32 @@
 import React from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createNote } from '../../services/noteService';
 import { NoteTag } from '../../types/note';
 import css from './NoteForm.module.css';
 
 interface NoteFormProps {
   onClose: () => void;
-  onCreated: () => void;
 }
 
 const tagOptions: NoteTag[] = ['Todo', 'Work', 'Personal', 'Meeting', 'Shopping'];
 
-const NoteForm: React.FC<NoteFormProps> = ({ onClose, onCreated }) => {
+const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (values: { title: string; content: string; tag: NoteTag }) =>
+      createNote(values.title, values.content, values.tag),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notes'] }); // оновити список
+      onClose(); // закрити форму
+    },
+    onError: (error) => {
+      console.error('Error creating note:', error);
+    },
+  });
+
   const formik = useFormik({
     initialValues: {
       title: '',
@@ -24,23 +38,11 @@ const NoteForm: React.FC<NoteFormProps> = ({ onClose, onCreated }) => {
         .min(3, 'Minimum 3 characters')
         .max(50, 'Maximum 50 characters')
         .required('Title is required'),
-      content: Yup.string()
-        .max(500, 'Maximum 500 characters'),
-      tag: Yup.mixed<NoteTag>()
-        .oneOf(tagOptions, 'Invalid tag')
-        .required('Tag is required'),
+      content: Yup.string().max(500, 'Maximum 500 characters'),
+      tag: Yup.mixed<NoteTag>().oneOf(tagOptions, 'Invalid tag').required('Tag is required'),
     }),
-    onSubmit: async (values, { setSubmitting, resetForm }) => {
-      try {
-        await createNote(values.title, values.content, values.tag);
-        onCreated();
-        resetForm();
-        onClose();
-      } catch (error) {
-        console.error('Error creating note:', error);
-      } finally {
-        setSubmitting(false);
-      }
+    onSubmit: (values) => {
+      mutation.mutate(values);
     },
   });
 
@@ -104,9 +106,9 @@ const NoteForm: React.FC<NoteFormProps> = ({ onClose, onCreated }) => {
         <button
           type="submit"
           className={css.submitButton}
-          disabled={formik.isSubmitting}
+          disabled={mutation.isPending}
         >
-          {formik.isSubmitting ? 'Creating...' : 'Create note'}
+          {mutation.isPending ? 'Creating...' : 'Create note'}
         </button>
       </div>
     </form>
