@@ -29,10 +29,9 @@ const App: React.FC = () => {
     isLoading,
     isError,
     refetch,
-  } = useQuery<NoteResponse>({
+  } = useQuery<NoteResponse, Error>({
     queryKey: ['notes', page, debouncedSearch],
     queryFn: () => fetchNotes(debouncedSearch, page),
-    keepPreviousData: true,
   });
 
   const openModal = () => setModalOpen(true);
@@ -50,7 +49,7 @@ const App: React.FC = () => {
       {isLoading && <p>Loading notes...</p>}
       {isError && <p>Error loading notes</p>}
 
-      {data?.results?.length ? (
+      {data && data.results.length > 0 ? (
         <>
           <NoteList notes={data.results} />
           {data.total > PER_PAGE && (
