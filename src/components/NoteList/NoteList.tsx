@@ -11,12 +11,21 @@ interface NoteListProps {
 const NoteList: React.FC<NoteListProps> = ({ notes }) => {
   const queryClient = useQueryClient();
 
-  const { mutate: mutateDelete } = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: (id: number) => deleteNote(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
     },
+    onError: (error) => {
+      console.error('Error deleting note:', error);
+    },
   });
+
+  const handleDelete = (id: number) => {
+    if (window.confirm('Are you sure you want to delete this note?')) {
+      mutate(id);
+    }
+  };
 
   return (
     <ul className={css.list}>
@@ -26,8 +35,13 @@ const NoteList: React.FC<NoteListProps> = ({ notes }) => {
           <p className={css.content}>{content}</p>
           <div className={css.footer}>
             <span className={css.tag}>{tag}</span>
-            <button className={css.button} onClick={() => mutateDelete(id)}>
-              Delete
+            <button
+              className={css.button}
+              onClick={() => handleDelete(id)}
+              disabled={isPending}
+              aria-label={`Delete note "${title}"`}
+            >
+              {isPending ? 'Deleting...' : 'Delete'}
             </button>
           </div>
         </li>

@@ -1,42 +1,65 @@
 import axios from 'axios';
+import { Note, NoteTag } from '../types/note';
 
-interface FetchNotesParams {
-  page: number;
-  perPage: number;
-  search?: string;
-}
+const BASE_URL = '/api/notes';
 
-export interface Note {
+interface RawNote {
   _id: string;
   title: string;
   content: string;
-  tag: string; // або можна використати NoteTag, якщо імпортуєш тип
+  tag: NoteTag;
 }
 
-interface FetchNotesResponse {
-  results: Note[];
-  total: number;
-  totalPages: number;
+function transformNote(raw: RawNote): Note {
+  return {
+    id: Number(raw._id),
+    title: raw.title,
+    content: raw.content,
+    tag: raw.tag,
+  };
 }
 
-export const fetchNotes = async ({ page, perPage, search }: FetchNotesParams): Promise<FetchNotesResponse> => {
-  const response = await axios.get('/api/notes', {
-    params: { page, perPage, search },
-  });
-  return response.data;
+// Додати токен
+const token = localStorage.getItem('token');
+
+const authHeaders = {
+  headers: {
+    Authorization: `Bearer ${token}`,
+  },
 };
 
-export const deleteNote = async (id: string): Promise<void> => {
-  await axios.delete(`/api/notes/${id}`);
+export const fetchNotes = async (
+  search: string,
+  page: number
+): Promise<{ results: Note[]; total: number; totalPages: number }> => {
+  const response = await axios.get<{
+    results: RawNote[];
+    total: number;
+    totalPages: number;
+  }>(BASE_URL, {
+    params: { search, page },
+    ...authHeaders,
+  });
+
+  return {
+    results: response.data.results.map(transformNote),
+    total: response.data.total,
+    totalPages: response.data.totalPages,
+  };
 };
 
 interface CreateNoteData {
   title: string;
   content: string;
-  tag: string;
+  tag: NoteTag;
 }
 
 export const createNote = async (noteData: CreateNoteData): Promise<Note> => {
-  const response = await axios.post('/api/notes', noteData);
-  return response.data;
+  const response = await axios.post<RawNote>(BASE_URL, noteData, authHeaders);
+  return transformNote(response.data);
+};
+
+export const deleteNote = async (id: number): Promise<Note> => {
+  const response = await axios.delete<RawNote>(`${BASE_URL}/${id}`, authHeaders);
+  return transformNote(response.data);
 };

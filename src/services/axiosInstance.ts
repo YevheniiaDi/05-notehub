@@ -1,10 +1,11 @@
-
 import axios from 'axios';
+
+const token = import.meta.env.VITE_NOTEHUB_TOKEN;
 
 const axiosInstance = axios.create({
   baseURL: '/api',
   headers: {
-    Authorization: import.meta.env.VITE_NOTEHUB_TOKEN,
+    ...(token && { Authorization: `Bearer ${token}` }),
   },
 });
 

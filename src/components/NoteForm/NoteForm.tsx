@@ -3,7 +3,7 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createNote } from '../../services/noteService';
-import type { NoteTag } from '../../types/note'; // ✅ type-only import
+import type { NoteTag } from '../../types/note';
 import css from './NoteForm.module.css';
 
 interface NoteFormProps {
@@ -12,12 +12,17 @@ interface NoteFormProps {
 
 const tagOptions: NoteTag[] = ['Todo', 'Work', 'Personal', 'Meeting', 'Shopping'];
 
+type FormValues = {
+  title: string;
+  content: string;
+  tag: NoteTag;
+};
+
 const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: (values: { title: string; content: string; tag: NoteTag }) =>
-      createNote(values), // ✅ fixed
+    mutationFn: (values: FormValues) => createNote(values),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
       onClose();
@@ -27,11 +32,11 @@ const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
     },
   });
 
-  const formik = useFormik({
+  const formik = useFormik<FormValues>({
     initialValues: {
       title: '',
       content: '',
-      tag: 'Todo' as NoteTag,
+      tag: 'Todo',
     },
     validationSchema: Yup.object({
       title: Yup.string()
@@ -46,20 +51,25 @@ const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
     },
   });
 
+  const renderError = (field: keyof FormValues) =>
+    formik.touched[field] && formik.errors[field] ? (
+      <div className={css.error}>{formik.errors[field]}</div>
+    ) : null;
+
   return (
-    <form className={css.form} onSubmit={formik.handleSubmit}>
+    <form className={css.form} onSubmit={formik.handleSubmit} noValidate>
       {/* Title */}
       <div className={css.formGroup}>
         <label htmlFor="title">Title</label>
         <input
           id="title"
           type="text"
+          required
           className={css.input}
           {...formik.getFieldProps('title')}
+          aria-invalid={!!formik.errors.title}
         />
-        {formik.touched.title && formik.errors.title && (
-          <div className={css.error}>{formik.errors.title}</div>
-        )}
+        {renderError('title')}
       </div>
 
       {/* Content */}
@@ -70,10 +80,9 @@ const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
           rows={6}
           className={css.textarea}
           {...formik.getFieldProps('content')}
+          aria-invalid={!!formik.errors.content}
         />
-        {formik.touched.content && formik.errors.content && (
-          <div className={css.error}>{formik.errors.content}</div>
-        )}
+        {renderError('content')}
       </div>
 
       {/* Tag */}
@@ -83,6 +92,8 @@ const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
           id="tag"
           className={css.select}
           {...formik.getFieldProps('tag')}
+          aria-invalid={!!formik.errors.tag}
+          required
         >
           {tagOptions.map(tag => (
             <option key={tag} value={tag}>
@@ -90,9 +101,7 @@ const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
             </option>
           ))}
         </select>
-        {formik.touched.tag && formik.errors.tag && (
-          <div className={css.error}>{formik.errors.tag}</div>
-        )}
+        {renderError('tag')}
       </div>
 
       {/* Actions */}
@@ -109,7 +118,7 @@ const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
           className={css.submitButton}
           disabled={mutation.isPending}
         >
-          {mutation.isPending ? 'Creating...' : 'Create note'}
+          {mutation.isPending ? 'Creating...' : 'Create Note'}
         </button>
       </div>
     </form>

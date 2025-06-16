@@ -11,6 +11,12 @@ import css from './App.module.css';
 
 const PER_PAGE = 12;
 
+type NoteResponse = {
+  results: Note[];
+  total: number;
+  totalPages: number;
+};
+
 const App: React.FC = () => {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -18,13 +24,9 @@ const App: React.FC = () => {
 
   const debouncedSearch = useDebounce(search, 500);
 
-  const { data, isLoading, isError, refetch } = useQuery<{
-    results: Note[];
-    total: number;
-    totalPages: number;
-  }>(
+  const { data, isLoading, isError, refetch } = useQuery<NoteResponse>(
     ['notes', page, debouncedSearch],
-    () => fetchNotes(debouncedSearch, page), // ✅ fixed
+    () => fetchNotes(debouncedSearch, page),
     { keepPreviousData: true }
   );
 
@@ -35,30 +37,30 @@ const App: React.FC = () => {
     <div className={css.app}>
       <header className={css.toolbar}>
         <SearchBox value={search} onChange={setSearch} />
-
-        {data?.total && data.total > PER_PAGE && (
-          <Pagination
-            pageCount={Math.ceil(data.total / PER_PAGE)}
-            currentPage={page}
-            onPageChange={setPage}
-          />
-        )}
-
         <button className={css.button} onClick={openModal}>
-          Create note +
+          Create Note
         </button>
       </header>
 
       {isLoading && <p>Loading notes...</p>}
       {isError && <p>Error loading notes</p>}
 
-      {data?.results && data.results.length > 0 && (
-        <NoteList notes={data.results} />
+      {data?.results?.length ? (
+        <>
+          <NoteList notes={data.results} />
+          {data.total > PER_PAGE && (
+            <Pagination
+              pageCount={Math.ceil(data.total / PER_PAGE)}
+              currentPage={page}
+              onPageChange={setPage}
+            />
+          )}
+        </>
+      ) : (
+        !isLoading && <p>No notes found.</p>
       )}
 
-      {isModalOpen && (
-        <NoteModal onClose={closeModal} onCreated={refetch} />
-      )}
+      {isModalOpen && <NoteModal onClose={closeModal} onCreated={refetch} />}
     </div>
   );
 };
