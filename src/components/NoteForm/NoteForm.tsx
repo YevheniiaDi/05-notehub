@@ -8,6 +8,7 @@ import css from './NoteForm.module.css';
 
 interface NoteFormProps {
   onClose: () => void;
+  onCreated: () => void; // ✅ додано
 }
 
 const tagOptions: NoteTag[] = ['Todo', 'Work', 'Personal', 'Meeting', 'Shopping'];
@@ -18,13 +19,14 @@ type FormValues = {
   tag: NoteTag;
 };
 
-const NoteForm: React.FC<NoteFormProps> = ({ onClose }) => {
+const NoteForm: React.FC<NoteFormProps> = ({ onClose, onCreated }) => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: (values: FormValues) => createNote(values),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
+      onCreated(); // ✅ тепер викликається
       onClose();
     },
     onError: (error) => {
