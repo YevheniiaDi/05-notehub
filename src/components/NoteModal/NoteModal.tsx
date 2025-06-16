@@ -8,8 +8,6 @@ interface NoteModalProps {
   onCreated: () => void;
 }
 
-const modalRoot = document.getElementById('modal-root')!;
-
 const NoteModal: React.FC<NoteModalProps> = ({ onClose, onCreated }) => {
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -27,6 +25,13 @@ const NoteModal: React.FC<NoteModalProps> = ({ onClose, onCreated }) => {
       onClose();
     }
   };
+
+  const modalRoot = document.getElementById('modal-root');
+
+  if (!modalRoot) {
+    console.error('Modal root element not found');
+    return null;
+  }
 
   return ReactDOM.createPortal(
     <div

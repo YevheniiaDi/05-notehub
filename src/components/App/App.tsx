@@ -24,11 +24,16 @@ const App: React.FC = () => {
 
   const debouncedSearch = useDebounce(search, 500);
 
-  const { data, isLoading, isError, refetch } = useQuery<NoteResponse>(
-    ['notes', page, debouncedSearch],
-    () => fetchNotes(debouncedSearch, page),
-    { keepPreviousData: true }
-  );
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery<NoteResponse>({
+    queryKey: ['notes', page, debouncedSearch],
+    queryFn: () => fetchNotes(debouncedSearch, page),
+    keepPreviousData: true,
+  });
 
   const openModal = () => setModalOpen(true);
   const closeModal = () => setModalOpen(false);

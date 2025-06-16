@@ -1,6 +1,6 @@
 import React from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Note } from '../../types/note';
+import type { Note } from '../../types/note'; // ✅ type-only import
 import { deleteNote } from '../../services/noteService';
 import css from './NoteList.module.css';
 

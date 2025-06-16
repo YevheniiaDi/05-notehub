@@ -7,13 +7,20 @@ interface SearchBoxProps {
 }
 
 const SearchBox: React.FC<SearchBoxProps> = ({ value, onChange }) => (
-  <input
-    className={css.input}
-    type="text"
-    placeholder="Search notes"
-    value={value}
-    onChange={e => onChange(e.target.value)}
-  />
+  <div className={css.wrapper}>
+    <label htmlFor="note-search" className="visually-hidden">
+      Search notes
+    </label>
+    <input
+      id="note-search"
+      className={css.input}
+      type="search"
+      placeholder="Search notes"
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      aria-label="Search notes"
+    />
+  </div>
 );
 
 export default SearchBox;
