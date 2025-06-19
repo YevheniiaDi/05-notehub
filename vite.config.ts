@@ -11,11 +11,10 @@ export default defineConfig({
       '/api': {
         target: 'https://notehub-public.goit.study/api',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-        configure: (proxy) => {
-          proxy.on('proxyReq', (proxyReq) => {
+        rewrite: path => path.replace(/^\/api/, ''),
+        configure: proxy => {
+          proxy.on('proxyReq', proxyReq => {
             const token = process.env.VITE_NOTEHUB_TOKEN;
-            console.log('Proxy token:', token);
             if (token) {
               proxyReq.setHeader('Authorization', `Bearer ${token}`);
             }
@@ -25,3 +24,5 @@ export default defineConfig({
     },
   },
 });
+
+
