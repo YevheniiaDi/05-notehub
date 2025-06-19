@@ -19,16 +19,18 @@ function transformNote(raw: RawNote): Note {
   };
 }
 
+// ✅ Додано limit як третій аргумент
 export const fetchNotes = async (
   search: string,
-  page: number
+  page: number,
+  limit: number
 ): Promise<{ results: Note[]; total: number; totalPages: number }> => {
   const response = await axiosInstance.get<{
     results: RawNote[];
     total: number;
     totalPages: number;
   }>(BASE_URL, {
-    params: { search, page },
+    params: { search, page, limit },
   });
 
   return {

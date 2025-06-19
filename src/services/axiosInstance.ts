@@ -6,4 +6,14 @@ const axiosInstance = axios.create({
     : '/api',
 });
 
+axiosInstance.interceptors.request.use((config) => {
+  const token = import.meta.env.VITE_NOTEHUB_TOKEN; // ✅ всередині функції
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export default axiosInstance;
+
+

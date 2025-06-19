@@ -13,13 +13,17 @@ const Pagination: React.FC<PaginationProps> = ({
   currentPage,
   onPageChange,
 }) => {
-  if (pageCount <= 1) return null; // ⛔️ Не показуємо пагінацію, якщо лише 1 сторінка
+  if (pageCount <= 1) return null;
+
+  const handlePageChange = (event: { selected: number }) => {
+    onPageChange(event.selected + 1);
+  };
 
   return (
     <ReactPaginate
       pageCount={pageCount}
       forcePage={currentPage - 1}
-      onPageChange={(event) => onPageChange(event.selected + 1)}
+      onPageChange={handlePageChange}
       containerClassName={css.pagination}
       activeClassName={css.active}
       previousLabel="<"

@@ -31,7 +31,9 @@ const App: React.FC = () => {
     refetch,
   } = useQuery<NoteResponse, Error>({
     queryKey: ['notes', page, debouncedSearch],
-    queryFn: () => fetchNotes(debouncedSearch, page),
+    queryFn: () => fetchNotes(debouncedSearch, page, PER_PAGE),
+    placeholderData: (prev) =>
+      prev ?? { results: [], total: 0, totalPages: 0 }, // ✅ правильна структура
   });
 
   const openModal = () => setModalOpen(true);
@@ -42,7 +44,7 @@ const App: React.FC = () => {
       <header className={css.toolbar}>
         <SearchBox value={search} onChange={setSearch} />
         <button className={css.button} onClick={openModal}>
-          Create Note
+          Create Note +
         </button>
       </header>
 
@@ -52,9 +54,9 @@ const App: React.FC = () => {
       {data && data.results.length > 0 ? (
         <>
           <NoteList notes={data.results} />
-          {data.total > PER_PAGE && (
+          {data.totalPages > 1 && (
             <Pagination
-              pageCount={Math.ceil(data.total / PER_PAGE)}
+              pageCount={data.totalPages}
               currentPage={page}
               onPageChange={setPage}
             />
@@ -70,3 +72,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+
