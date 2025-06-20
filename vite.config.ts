@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import dotenv from 'dotenv';
 
+// Завантаження .env змінних
 dotenv.config();
 
 export default defineConfig({
@@ -24,4 +25,3 @@ export default defineConfig({
     },
   },
 });
-
