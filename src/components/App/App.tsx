@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchNotes } from '../../services/noteService';
 import SearchBox from '../SearchBox/SearchBox';
@@ -9,7 +9,7 @@ import useDebounce from '../../hooks/useDebounce';
 import type { Note } from '../../types/note';
 import css from './App.module.css';
 
-const PER_PAGE = 12;
+const PER_PAGE = 12 as const;
 
 type NoteResponse = {
   results: Note[];
@@ -24,6 +24,10 @@ const App: React.FC = () => {
 
   const debouncedSearch = useDebounce(search, 500);
 
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
+
   const {
     data,
     isLoading,
@@ -31,9 +35,8 @@ const App: React.FC = () => {
     refetch,
   } = useQuery<NoteResponse, Error>({
     queryKey: ['notes', page, debouncedSearch],
-    queryFn: () => fetchNotes(debouncedSearch, page, PER_PAGE),
-    placeholderData: (prev) =>
-      prev ?? { results: [], total: 0, totalPages: 0 }, // ✅ правильна структура
+    queryFn: () => fetchNotes(debouncedSearch.trim(), page, PER_PAGE),
+    placeholderData: (prev) => prev,
   });
 
   const openModal = () => setModalOpen(true);
@@ -51,7 +54,11 @@ const App: React.FC = () => {
       {isLoading && <p>Loading notes...</p>}
       {isError && <p>Error loading notes</p>}
 
-      {data && data.results.length > 0 ? (
+      {!isLoading && data && data.results.length === 0 && (
+        <p>No notes found.</p>
+      )}
+
+      {data && data.results.length > 0 && (
         <>
           <NoteList notes={data.results} />
           {data.totalPages > 1 && (
@@ -62,8 +69,6 @@ const App: React.FC = () => {
             />
           )}
         </>
-      ) : (
-        !isLoading && <p>No notes found.</p>
       )}
 
       {isModalOpen && <NoteModal onClose={closeModal} onCreated={refetch} />}
@@ -72,4 +77,6 @@ const App: React.FC = () => {
 };
 
 export default App;
+
+
 

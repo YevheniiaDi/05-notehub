@@ -22,18 +22,19 @@ function transformNote(raw: RawNote): Note {
 export const fetchNotes = async (
   search: string,
   page: number,
-  perPage: number // ✅ Параметр perPage замість limit
+  perPage: number
 ): Promise<{ results: Note[]; total: number; totalPages: number }> => {
+  const params: Record<string, any> = { page, perPage };
+  if (search.trim() !== '') {
+    params.search = search;
+  }
+
   const response = await axiosInstance.get<{
     results: RawNote[];
     total: number;
     totalPages: number;
   }>(BASE_URL, {
-    params: {
-      search,
-      page,
-      perPage, // ✅ ВАЖЛИВО: саме perPage
-    },
+    params,
   });
 
   return {
