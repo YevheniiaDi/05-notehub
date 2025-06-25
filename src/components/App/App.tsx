@@ -4,7 +4,7 @@ import { fetchNotes } from '../../services/noteService';
 import SearchBox from '../SearchBox/SearchBox';
 import Pagination from '../Pagination/Pagination';
 import NoteList from '../NoteList/NoteList';
-import NoteModal from '../NoteModal/NoteModal';
+import NoteModal from '../Modal/Modal';
 import useDebounce from '../../hooks/useDebounce';
 import type { Note } from '../../types/note';
 import css from './App.module.css';
