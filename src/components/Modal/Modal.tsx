@@ -1,14 +1,13 @@
 import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import NoteForm from '../NoteForm/NoteForm';
 import css from './NoteModal.module.css';
 
-interface NoteModalProps {
+interface ModalProps {
   onClose: () => void;
-  onCreated: () => void;
+  children: React.ReactNode;
 }
 
-const NoteModal: React.FC<NoteModalProps> = ({ onClose, onCreated }) => {
+const Modal: React.FC<ModalProps> = ({ onClose, children }) => {
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -17,7 +16,12 @@ const NoteModal: React.FC<NoteModalProps> = ({ onClose, onCreated }) => {
     };
 
     window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      window.removeEventListener('keydown', handleEsc);
+      document.body.style.overflow = '';
+    };
   }, [onClose]);
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -26,13 +30,6 @@ const NoteModal: React.FC<NoteModalProps> = ({ onClose, onCreated }) => {
     }
   };
 
-  const modalRoot = document.getElementById('modal-root');
-
-  if (!modalRoot) {
-    console.error('Modal root element not found');
-    return null;
-  }
-
   return ReactDOM.createPortal(
     <div
       className={css.backdrop}
@@ -40,12 +37,11 @@ const NoteModal: React.FC<NoteModalProps> = ({ onClose, onCreated }) => {
       aria-modal="true"
       onClick={handleBackdropClick}
     >
-      <div className={css.modal}>
-        <NoteForm onClose={onClose} onCreated={onCreated} />
-      </div>
+      <div className={css.modal}>{children}</div>
     </div>,
-    modalRoot
+    document.body
   );
 };
 
-export default NoteModal;
+export default Modal;
+
