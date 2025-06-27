@@ -8,6 +8,8 @@ interface RawNote {
   title: string;
   content: string;
   tag: NoteTag;
+  createdAt: string;
+  updatedAt: string;
 }
 
 function transformNote(raw: RawNote): Note {
@@ -16,6 +18,8 @@ function transformNote(raw: RawNote): Note {
     title: raw.title,
     content: raw.content,
     tag: raw.tag,
+    createdAt: raw.createdAt,
+    updatedAt: raw.updatedAt,
   };
 }
 
@@ -59,3 +63,4 @@ export const deleteNote = async (id: number): Promise<Note> => {
   const response = await axiosInstance.delete<RawNote>(`${BASE_URL}/${id}`);
   return transformNote(response.data);
 };
+

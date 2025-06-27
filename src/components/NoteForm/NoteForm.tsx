@@ -76,7 +76,7 @@ const NoteForm: React.FC<NoteFormProps> = ({ onClose, onCreated }) => {
               id="content"
               name="content"
               as="textarea"
-              rows="8"
+              rows={8}
               className={css.textarea}
             />
             <ErrorMessage name="content" component="span" className={css.error} />

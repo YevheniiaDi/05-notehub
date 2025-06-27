@@ -4,13 +4,13 @@ import { fetchNotes } from '../../services/noteService';
 import SearchBox from '../SearchBox/SearchBox';
 import Pagination from '../Pagination/Pagination';
 import NoteList from '../NoteList/NoteList';
-import Modal from '../Modal/Modal'; // оновлений імпорт
-import NoteForm from '../NoteForm/NoteForm'; // додано
+import Modal from '../Modal/Modal';
+import NoteForm from '../NoteForm/NoteForm';
 import useDebounce from '../../hooks/useDebounce';
 import type { Note } from '../../types/note';
 import css from './App.module.css';
 
-const PER_PAGE = 12 as const;
+const PER_PAGE = 12;
 
 type NoteResponse = {
   results: Note[];
@@ -34,7 +34,7 @@ const App: React.FC = () => {
     isLoading,
     isError,
     refetch,
-  } = useQuery<NoteResponse, Error>({
+  } = useQuery<NoteResponse>({
     queryKey: ['notes', page, debouncedSearch],
     queryFn: () => fetchNotes(debouncedSearch.trim(), page, PER_PAGE),
     placeholderData: (prev) => prev,
@@ -82,6 +82,8 @@ const App: React.FC = () => {
 };
 
 export default App;
+
+
 
 
 
