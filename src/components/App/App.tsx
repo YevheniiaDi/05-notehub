@@ -1,42 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { fetchNotes } from '../../services/noteService';
-import SearchBox from '../SearchBox/SearchBox';
-import Pagination from '../Pagination/Pagination';
-import NoteList from '../NoteList/NoteList';
-import Modal from '../Modal/Modal';
-import NoteForm from '../NoteForm/NoteForm';
-import useDebounce from '../../hooks/useDebounce';
-import type { Note } from '../../types/note';
-import css from './App.module.css';
-
-const PER_PAGE = 12;
-
-type NoteResponse = {
-  results: Note[];
-  total: number;
-  totalPages: number;
-};
+import React, { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useDebounce } from "use-debounce";
+import { fetchNotes } from "../../services/noteService";
+import SearchBox from "../SearchBox/SearchBox";
+import Pagination from "../Pagination/Pagination";
+import NoteList from "../NoteList/NoteList";
+import Modal from "../Modal/Modal";
+import NoteForm from "../NoteForm/NoteForm";
+import css from "./App.module.css";
 
 const App: React.FC = () => {
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [isModalOpen, setModalOpen] = useState(false);
 
-  const debouncedSearch = useDebounce(search, 500);
+  const [debouncedSearch] = useDebounce(search, 500);
 
   useEffect(() => {
     setPage(1);
   }, [debouncedSearch]);
 
-  const {
-    data,
-    isLoading,
-    isError,
-    refetch,
-  } = useQuery<NoteResponse>({
-    queryKey: ['notes', page, debouncedSearch],
-    queryFn: () => fetchNotes(debouncedSearch.trim(), page, PER_PAGE),
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ["notes", page, debouncedSearch],
+    queryFn: () => fetchNotes(debouncedSearch.trim(), page),
     placeholderData: (prev) => prev,
   });
 
@@ -55,13 +41,13 @@ const App: React.FC = () => {
       {isLoading && <p>Loading notes...</p>}
       {isError && <p>Error loading notes</p>}
 
-      {!isLoading && data && data.results.length === 0 && (
+      {!isLoading && data && data.notes.length === 0 && (
         <p>No notes found.</p>
       )}
 
-      {data && data.results.length > 0 && (
+      {data && data.notes.length > 0 && (
         <>
-          <NoteList notes={data.results} />
+          <NoteList notes={data.notes} />
           {data.totalPages > 1 && (
             <Pagination
               pageCount={data.totalPages}
@@ -82,6 +68,7 @@ const App: React.FC = () => {
 };
 
 export default App;
+
 
 
 
